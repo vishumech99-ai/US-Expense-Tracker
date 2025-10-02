@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vishal Expense Calculator</title>
+<!-- Google Font: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background: #4CAF50;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    header .title-container {
+        flex-grow: 1;
+        text-align: center;
+        margin-left: 60px; /* Adjusted for new button size */
+    }
+    
+    .header-save-btn {
+        background: #f9f9f9;
+        color: #4CAF50;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        font-size: 1.4rem; /* Larger Icon */
+        margin-right: 1rem;
+        flex-shrink: 0; /* Prevent button from shrinking */
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .header-save-btn:hover {
+        background: #eee;
+    }
+
+    /* Navigation Styles */
+    #mainNav {
+        display: flex; 
+        justify-content: center; 
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        position: absolute;
+        bottom: -1px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 610px;
+    }
+    .nav-button {
+      background: none;
+      color: white;
+      border: none;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      border-radius: 6px 6px 0 0;
+      transition: background 0.2s;
+      margin: 0;
+      width: auto; 
+      flex-grow: 1;
+      max-width: 300px;
+      font-size: 0.9rem;
+    }
+    .nav-button:hover:not(.active) {
+        background: #66bb6a;
+    }
+    .nav-button.active {
+        background: #f9f9f9;
+        color: #4CAF50; 
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    }
+    /* End Navigation Styles */
+    
+    .header-wrapper {
+        background: #4CAF50;
+        padding: 1rem;
+        padding-bottom: 3rem; /* Space for the nav buttons */
+        position: relative;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 1rem;
+    }
+    section {
+      margin-bottom: 2rem;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    h2 {
+      margin-top: 0;
+      color: #4CAF50;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .summary-box {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    /* Common style for all summary cards */
+    .summary-box > div {
+        flex: 1;
+        padding: 1rem;
+        border-radius: 6px;
+        margin: 0 5px;
+        transition: all 0.3s ease-in-out;
+    }
+    .summary-box h3 {
+      margin: 0.5rem 0 0;
+      font-size: 1rem;
+    }
+    .summary-box p {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-top: 5px;
+    }
+    
+    /* Individual card base styles (only Savings is dynamic) */
+    .income-card { background: #e8f5e9; } /* Light Green */
+    .expense-card { background: #ffebee; } /* Light Red */
+
+    /* Savings/Over Budget POSITIVE STATE (Blue) */
+    .savings-positive {
+        background: #e3f2fd; /* Light Blue */
+    }
+    .savings-positive h3, .savings-positive p {
+        color: #0d47a1; /* Dark Blue */
+    }
+
+    /* Savings/Over Budget NEGATIVE STATE (Danger Orange/Amber) */
+    .savings-negative {
+        background: #ffe0b2; /* Light Orange/Amber - low contrast danger */
+    }
+    .savings-negative h3, .savings-negative p {
+        color: #e65100; /* Burnt Orange - high visibility, low contrast danger */
+    }
+    
+    /* === Forecast Summary Specific Styles (4-column layout) === */
+    #forecastSummaryContainer {
+        display: grid; 
+        grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
+        gap: 1rem; 
+    }
+    #forecastSummaryContainer > div {
+        padding: 0.75rem; 
+        margin: 0;
+        min-width: 100px;
+    }
+    #forecastSummaryContainer h3 {
+        font-size: 0.75rem; 
+        margin: 0.25rem 0; 
+        font-weight: 600;
+    }
+    #forecastSummaryContainer p {
+        font-size: 1.1rem; 
+        margin: 2px 0;
+        font-weight: 700;
+    }
+    /* Special card for Final Savings */
+    .final-saving-card {
+        background: #bbdefb; /* Medium Blue */
+        box-shadow: 0 2px 5px rgba(33, 150, 243, 0.3);
+    }
+    .final-saving-card h3, .final-saving-card p {
+        color: #1565c0; /* Darker Blue text */
+    }
+
+    .final-saving-card p:last-of-type {
+        font-size: 0.35rem;
+        margin-top: -5px;
+    }
+
+    input, select, button {
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.75rem 0.5rem;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    th {
+        background-color: #f1f8e9; /* Lighter shade of green for header */
+        color: #333;
+    }
+    .actions button {
+      padding: 0.3rem 0.5rem;
+      font-size: 0.8rem;
+      display: inline-block;
+      margin-right: 0.5rem;
+      width: auto;
+    }
+    
+    /* MONTHLY BREAKDOWN STYLES (Dashboard) */
+    .monthly-summary {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem; 
+        padding: 0;
+    }
+    .month-box {
+        background: #f0f7ff; 
+        padding: 0.75rem 1rem; 
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        display: flex; 
+        justify-content: space-between; /* Ensures Month name is on left, figures on right */
+        align-items: center; 
+        border-left: 5px solid #2196F3; 
+        transition: all 0.2s;
+    }
+    
+    /* Style for the inner financial details block */
+    .month-financial-details p {
+        margin: 0;
+        font-size: 0.9rem;
+        /* Aligns all text inside the detail block to the right */
+        text-align: right; 
+        /* Ensure the numbers themselves line up */
+        font-variant-numeric: tabular-nums; 
+    }
+
+    .month-financial-details h4 {
+        margin: 0; 
+        font-size: 1.1rem; 
+        color: #333;
+    }
+
+    /* END MONTHLY BREAKDOWN STYLES */
+
+    /* FORECAST & ADVANCE TABLE STYLES */
+    #forecastTable input[type="number"],
+    #advanceTable input[type="number"] {
+        padding: 0.4rem;
+        margin: 0;
+        width: 100%;
+        min-width: 50px;
+        text-align: right;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .manual-forecast-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 1rem;
+    }
+    .manual-forecast-buttons button {
+        width: auto;
+        flex-grow: 1;
+        max-width: 300px;
+        min-width: 150px;
+        margin: 0;
+    }
+    
+    /* Import/Export/Delete All Actions */
+    .import-export-actions {
+        display: flex; 
+        gap: 10px;     
+        margin-bottom: 1rem;
+    }
+    
+    .import-export-actions button, 
+    .import-export-actions label {
+        background: #4CAF50; 
+        color: white; 
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s ease;
+        border-radius: 4px;
+        flex: 1; 
+        margin: 0; 
+        width: auto; 
+        padding: 0.75rem 0.5rem; 
+        font-size: 0.9rem; 
+        text-align: center; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        gap: 5px; 
+    }
+
+    .import-export-actions label:hover,
+    .import-export-actions button:hover {
+        background: #45a049; 
+    }
+
+    /* Delete All button styling */
+    .delete-all-btn {
+        background: #f44336; 
+    }
+    .delete-all-btn:hover {
+        background: #d32f2f;
+    }
+
+    /* Show More/All History Button */
+    #showMoreContainer {
+        text-align: center;
+        margin-top: 1rem;
+    }
+    #toggleHistoryButton {
+        width: auto;
+        padding: 0.6rem 1.5rem;
+        background: #2196F3;
+    }
+    #toggleHistoryButton:hover {
+        background: #1e88e5;
+    }
+    
+    /* Updated compact styles for the Add Transaction form */
+    #transactionForm .compact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    #transactionForm .compact-grid .full-width {
+        grid-column: 1 / -1;
+    }
+
+    #transactionForm .compact-grid input,
+    #transactionForm .compact-grid select {
+        margin: 0;
+        padding: 0.75rem;
+        background: #fdfdfd;
+        border: 1px solid #ddd;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #transactionForm .compact-grid input:focus,
+    #transactionForm .compact-grid select:focus {
+        outline: none;
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    }
+
+    #transactionForm select:required:invalid {
+        color: #6c757d;
+    }
+    option[value=""][disabled] {
+        display: none;
+    }
+    option {
+        color: #000;
+    }
+
+    #submitButton {
+        font-size: 1rem;
+        padding: 0.8rem;
+        background: linear-gradient(145deg, #5cb85c, #4CAF50);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease-in-out;
+    }
+
+    #submitButton:hover {
+        background: linear-gradient(145deg, #66c066, #54b858);
+        box-shadow: 0 5px 8px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+    }
+
+    /* ---------------------------------------------------- */
+    /* Responsive Styles */
+    @media (max-width: 950px) { /* Adjusted breakpoint for 4 cards */
+        #forecastSummaryContainer {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        header {
+            flex-direction: column;
+        }
+        header .title-container {
+            margin-left: 0;
+            margin-bottom: 1rem;
+        }
+        .header-save-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            margin: 0;
+        }
+
+        .summary-box {
+            flex-direction: column;
+        }
+        .summary-box > div {
+            margin: 5px 0;
+        }
+        /* Forecast summary stacks fully on mobile */
+        #forecastSummaryContainer {
+             grid-template-columns: repeat(2, 1fr); /* 2 columns for mobile is better for 5 cards */
+        }
+
+        /* Stack the action buttons vertically on mobile */
+        .import-export-actions {
+            flex-direction: column;
+            gap: 5px;
+        }
+        .import-export-actions button, 
+        .import-export-actions label {
+            min-width: 100%;
+            margin: 0.25rem 0; 
+        }
+
+        .monthly-summary {
+            grid-template-columns: 1fr;
+        }
+        /* Mobile adjustment for Monthly Breakdown */
+        .month-box {
+            flex-direction: column; 
+            align-items: flex-start;
+        }
+        /* Override for financial details on mobile to look better */
+        .month-financial-details {
+             margin-top: 0.5rem;
+             width: 100%; /* Take full width on mobile for better stacking */
+             padding-top: 0.5rem;
+             border-top: 1px dashed #ccc;
+        }
+        .month-financial-details p {
+             text-align: left; /* Back to left-align on mobile stack */
+             font-size: 0.85rem;
+        }
+        /* Mobile adjustment for Forecast Table */
+        #forecastTableContainer th, #forecastTableContainer td,
+        #advanceTableContainer th, #advanceTableContainer td {
+            font-size: 0.75rem;
+            padding: 0.4rem;
+        }
+        #forecastTable input[type="number"],
+        #advanceTable input[type="number"] {
+            font-size: 0.8rem;
+            padding: 0.2rem;
+        }
+        .manual-forecast-buttons {
+            flex-direction: column;
+        }
+        .manual-forecast-buttons button {
+            min-width: 100%;
+        }
+        
+    }
+</style>
+</head>
+<body>
+<div class="header-wrapper">
+    <header>
+        <div class="title-container">
+            <div style="font-size: 1.5rem;">📊 Vishal Expense Calculator</div>
+        </div>
+        <button id="saveButton" class="header-save-btn" title="Save & Export"><i class="fas fa-save"></i></button>
+    </header>
+    <nav id="mainNav">
+        <button class="nav-button active" onclick="switchView('dashboard')">🏠 Dashboard & History</button>
+        <button class="nav-button" onclick="switchView('forecast')">🔮 Forecast & Advance</button>
+    </nav>
+</div>
+<div class="container">
+
+<!-- ============================================== -->
+<!-- 1. DASHBOARD VIEW (Existing Content)           -->
+<!-- ============================================== -->
+<div id="dashboardView">
+<section>
+    <h2>Financial Analysis Summary</h2>
+    <div class="summary-box">
+        <div class="income-card">
+            <h3 style="color: green;">💰 Earnings</h3>
+            <p id="totalIncome" style="color: green;">$0.00</p>
+        </div>
+        <div class="expense-card">
+            <h3 style="color: red;">💸 Expenses</h3>
+            <p id="totalExpense" style="color: red;">$0.00</p>
+        </div>
+        <div id="savingsBox" class="savings-positive">
+            <h3 id="savingsLabel">💼 Savings</h3>
+            <p id="totalSaving">$0.00</p>
+        </div>
+    </div>
+
+    <h3 style="margin-top: 2.5rem; color: #4CAF50; border-top: 2px solid #eee; padding-top: 1.5rem; font-weight: 600;">Monthly Breakdown</h3>
+    <div class="monthly-summary" id="monthlySummary">
+        <!-- Monthly summary boxes will be inserted here -->
+    </div>
+</section>
+<section>
+<h2>Add Transaction</h2>
+<form id="transactionForm">
+    <div class="compact-grid">
+        <input id="date" required="" type="date" title="Transaction Date"/>
+        <select id="type" required="">
+            <option value="" disabled selected>Type</option>
+            <option value="Income">Income</option>
+            <option value="Expense">Expense</option>
+        </select>
+        <select id="subType" required="">
+            <option value="" disabled selected>Sub-type</option>
+        </select>
+        <input id="amount" placeholder="Amount" required="" type="number" min="0.01" step="0.01"/>
+        <input id="note" placeholder="Note (Optional)" type="text" class="full-width"/>
+    </div>
+    <button type="submit" id="submitButton">➕ Add Transaction</button>
+</form>
+</section>
+<section>
+<h2>Transaction History</h2>
+<div class="import-export-actions">
+    <button onclick="exportCSV()">📤 Export CSV</button>
+    <!-- The label is now styled like a button via the new CSS -->
+    <label for="importFile">
+        <i class="fa fa-cloud-upload"></i> 📥 Import CSV
+    </label>
+    <input accept=".csv" id="importFile" onchange="importCSV(event)" type="file" style="display: none;"/>
+    <button onclick="deleteAll()" class="delete-all-btn">🗑️ Delete All</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Date</th><th>Type</th><th>Sub-type</th><th>Amount</th><th>Note</th><th>Actions</th>
+</tr>
+</thead>
+<tbody id="transactionTable">
+    <!-- Transactions will be inserted here -->
+</tbody>
+</table>
+<div id="showMoreContainer">
+    <!-- The show/hide button will be dynamically inserted here -->
+</div>
+</section>
+</div>
+
+<!-- ============================================== -->
+<!-- 2. FORECAST & ADVANCE VIEW (UPDATED CONTENT)   -->
+<!-- ============================================== -->
+<div id="forecastView" style="display:none;">
+    <section>
+      <h2>Forecast Breakdown</h2>
+      <div id="forecastSummaryContainer" style="margin-bottom: 2rem;">
+        
+        <!-- Travel Allowance -->
+        <div class="income-card">
+            <h3>✈️ Travel Allowance</h3>
+            <p id="forecastTotalTravelAllowance">$0.00</p>
+        </div>
+        
+        <!-- Projected Expense -->
+        <div class="expense-card">
+            <h3>💸 Projected Expense</h3>
+            <p id="forecastTotalExpense">$0.00</p>
+        </div>
+
+        <!-- Projected Net Saving -->
+        <div id="forecastNetSavingBox" class="savings-positive">
+            <h3 id="forecastNetSavingLabel">💼 Projected Net Saving</h3>
+            <p id="forecastTotalSaving">$0.00</p>
+        </div>
+        
+        <!-- Final Forecasted Saving -->
+        <div id="finalForecastedSavingBox" class="final-saving-card">
+            <h3>🔮 Final Total Saving</h3>
+            <p id="finalForecastedSaving">$0.00</p>
+            <p>(Actual + Projected)</p>
+        </div>
+        
+      </div>
+       <div class="manual-forecast-buttons">
+          <button onclick="addMonthEntry()">➕ Add Next Month to Forecast</button>
+          <button onclick="deleteAllForecasts()" style="background: #f44336;">🗑️ Clear All Forecasts</button>
+      </div>
+      <table id="forecastTableContainer">
+        <thead>
+          <tr>
+            <th rowspan="2">Month</th>
+            <th colspan="2" style="text-align: center;">Income ($)</th>
+            <th rowspan="2">Expense ($)</th>
+            <th rowspan="2">Saving ($)</th>
+            <th rowspan="2">Running Balance ($)</th>
+            <th rowspan="2" style="width: 50px;">Del</th>
+          </tr>
+          <tr>
+            <th style="font-weight: normal; text-align: right; background-color: #f6fdf6;">Per Diem</th>
+            <th style="font-weight: normal; text-align: right; background-color: #f6fdf6;">Travel Allowance</th>
+          </tr>
+        </thead>
+        <tbody id="forecastTable">
+          <tr><td colspan="7" style="text-align: center; color: #999;">Click 'Add Next Month to Forecast' to begin planning.</td></tr>
+        </tbody>
+      </table>
+    </section>
+    
+    <!-- NEW ADVANCE SECTION -->
+    <section>
+      <h2>💵 Advance Tracking</h2>
+      
+      <!-- NEW: Advance Summary Section -->
+      <div class="summary-box" style="margin-bottom: 2rem;">
+        <div class="income-card">
+            <h3>💰 Total Income</h3>
+            <p id="advanceTotalIncome">$0.00</p>
+        </div>
+        <div class="expense-card">
+            <h3>💸 Total Advance Taken</h3>
+            <p id="advanceTotalTaken">$0.00</p>
+        </div>
+        <div id="advanceBalanceBox" class="savings-positive">
+            <h3>💼 Balance</h3>
+            <p id="advanceBalance">$0.00</p>
+        </div>
+      </div>
+      
+      <div class="manual-forecast-buttons">
+          <button onclick="addAdvanceMonthEntry()">➕ Add Month to Advance</button>
+          <button onclick="deleteAllAdvances()" style="background: #f44336;">🗑️ Clear All Advances</button>
+      </div>
+      <table id="advanceTableContainer">
+        <thead>
+          <tr>
+            <th rowspan="2">Month</th>
+            <th colspan="2" style="text-align: center;">Income ($)</th>
+            <th rowspan="2">Advance Taken ($)</th>
+            <th rowspan="2">Balance ($)</th>
+            <th rowspan="2" style="width: 50px;">Del</th>
+          </tr>
+          <tr>
+            <th style="font-weight: normal; text-align: right; background-color: #f6fdf6;">Per Diem</th>
+            <th style="font-weight: normal; text-align: right; background-color: #f6fdf6;">Travel Allowance</th>
+          </tr>
+        </thead>
+        <tbody id="advanceTable">
+          <tr><td colspan="6" style="text-align: center; color: #999;">Click 'Add Month to Advance' to begin tracking.</td></tr>
+        </tbody>
+      </table>
+    </section>
+</div>
+
+</div>
+
+<!-- Generic Modal for prompts and confirmations -->
+<div id="modalBackdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div id="modalContent" style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center;">
+        <p id="modalMessage" style="margin-top: 0;"></p>
+        <div id="modalInputContainer" style="display: none;">
+            <!-- Updated placeholder to reflect MM-YYYY format -->
+            <input id="modalTextInput" type="text" placeholder="MM-YYYY, e.g., 10-2025" style="margin-bottom: 1rem;"/>
+        </div>
+        <div id="modalButtonContainer" style="display: flex; justify-content: center; gap: 1rem;">
+            <button id="modalConfirmButton" style="background: #4CAF50;">Confirm</button>
+            <button id="modalCancelButton" style="background: #f44336;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Data and Constants
+    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+    let manualForecasts = JSON.parse(localStorage.getItem('manualForecasts')) || []; 
+    let advances = JSON.parse(localStorage.getItem('advances')) || [];
+    let editIndex = null; 
+    let showAllTransactions = false; // New state for history visibility
+    const CURRENCY_SYMBOL = '$'; 
+    const HISTORY_LIMIT = 5; // Limit for initial display
+
+    // Income and Expense Sub-types
+    const subTypes = {
+      Income: ["Per Diem", "Travel Allowance", "Overtime"],
+      Expense: ["Car", "Other"]
+    };
+    
+    // 2. UI Element Getters
+    const subTypeSelect = document.getElementById('subType');
+    const typeSelect = document.getElementById('type');
+    const transactionForm = document.getElementById('transactionForm');
+    const submitButton = document.getElementById('submitButton');
+    const navButtons = document.querySelectorAll('.nav-button');
+    const transactionTable = document.getElementById('transactionTable');
+    
+    // 3. Event Listeners
+    typeSelect.addEventListener('change', updateSubTypes);
+    transactionForm.addEventListener('submit', handleFormSubmit);
+
+    // 4. Core Functions
+
+    /** Handles switching between dashboard and forecast views. */
+    function switchView(viewId) {
+        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('forecastView').style.display = 'none';
+
+        if (viewId === 'dashboard') {
+            document.getElementById('dashboardView').style.display = 'block';
+        } else if (viewId === 'forecast') {
+            document.getElementById('forecastView').style.display = 'block';
+            renderManualForecasts(); 
+            updateManualForecasts(); 
+            renderAdvanceTable();
+        }
+        
+        // Update active class on navigation buttons
+        navButtons.forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.nav-button[onclick="switchView('${viewId}')"]`).classList.add('active');
+
+        updateUI(); 
+    }
+
+    /** * Helper function to parse common date formats (DD-MM-YYYY or YYYY-MM-DD) 
+     * into YYYY-MM-DD for storage/internal consistency. 
+     */
+    function normalizeDateForStorage(dateString) {
+        if (!dateString) return null;
+        dateString = dateString.trim();
+        const parts = dateString.split(/[-\/.]/); // Split by hyphen, slash, or dot
+        
+        if (parts.length === 3) {
+            // Check for YYYY-MM-DD (standard)
+            if (parts[0].length === 4) {
+                return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+            }
+            // Assume DD-MM-YYYY format 
+            if (parts[2].length === 4) {
+                 return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+        }
+        return dateString; // Fallback
+    }
+    
+    /** Helper function to convert stored date format YYYY-MM-DD to DD-MM-YYYY for display. */
+    function formatDateDisplay(dateString) {
+        if (!dateString) return 'N/A';
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+            // Converts YYYY-MM-DD to DD-MM-YYYY
+            return `${parts[2]}-${parts[1]}-${parts[0]}`; 
+        }
+        return dateString; 
+    }
+    
+    /** Helper function to get today's date in 'YYYY-MM-DD' format. */
+    function getTodayDateForInput() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+        const dd = String(today.getDate()).padStart(2, '0'); 
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    /** Populates the sub-type dropdown based on the selected transaction type. */
+    function updateSubTypes() {
+      const type = typeSelect.value;
+      subTypeSelect.innerHTML = '<option value="" disabled selected>Sub-type</option>';
+      if(subTypes[type]){
+          subTypes[type].forEach(sub => {
+            const opt = document.createElement('option');
+            opt.value = sub;
+            opt.textContent = sub;
+            subTypeSelect.appendChild(opt);
+          });
+      }
+    }
+
+    /** Handles form submission for both adding and editing transactions. */
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      
+      const rawDate = document.getElementById('date').value;
+      
+      const newTransaction = {
+        // Form input is guaranteed to be YYYY-MM-DD, which is already normalized.
+        date: rawDate, 
+        type: typeSelect.value,
+        subType: subTypeSelect.value,
+        amount: Math.abs(parseFloat(document.getElementById('amount').value)), 
+        note: document.getElementById('note').value,
+      };
+
+      if (editIndex !== null) {
+        transactions[editIndex] = newTransaction;
+        editIndex = null; 
+        submitButton.textContent = '➕ Add Transaction';
+        submitButton.style.background = '#4CAF50'; 
+      } else {
+        transactions.push(newTransaction);
+      }
+      
+      localStorage.setItem('transactions', JSON.stringify(transactions));
+      transactionForm.reset();
+      updateSubTypes(); 
+      document.getElementById('date').value = getTodayDateForInput();
+      updateUI();
+    }
+
+    /** Calculates total income, expense, and balance from historical transactions. */
+    function calculateTotals() {
+        let income = 0, expense = 0;
+        transactions.forEach(t => {
+            if (t.type === 'Income') income += t.amount;
+            else expense += t.amount;
+        });
+        const balance = income - expense;
+        return { income, expense, balance };
+    }
+
+
+    /** Updates all dynamic UI elements: Summary, History, and Monthly Breakdown. */
+    function updateUI() {
+      const { income, expense, balance } = calculateTotals();
+
+      // Update Summary Section 
+      document.getElementById('totalIncome').textContent = `${CURRENCY_SYMBOL}${income.toFixed(2)}`;
+      document.getElementById('totalExpense').textContent = `${CURRENCY_SYMBOL}${expense.toFixed(2)}`;
+      
+      const totalSavingElement = document.getElementById('totalSaving');
+      const savingsLabel = document.getElementById('savingsLabel');
+      const savingsBox = document.getElementById('savingsBox');
+
+      totalSavingElement.textContent = `${CURRENCY_SYMBOL}${balance.toFixed(2)}`;
+
+      if (balance < 0) {
+        savingsLabel.innerHTML = '🚨 Over Budget';
+        savingsBox.classList.remove('savings-positive');
+        savingsBox.classList.add('savings-negative');
+        totalSavingElement.style.color = '#e65100'; 
+      } else {
+        savingsLabel.innerHTML = '💼 Savings';
+        savingsBox.classList.remove('savings-negative');
+        savingsBox.classList.add('savings-positive');
+        totalSavingElement.style.color = '#0d47a1'; 
+      }
+
+      displayTransactionHistory();
+      
+      // Only call dashboard update if view is active
+      if (document.getElementById('dashboardView').style.display !== 'none') {
+        updateMonthlySummary();
+      }
+      // Only call forecast update if view is active
+      if (document.getElementById('forecastView').style.display !== 'none') {
+          updateManualForecasts();
+          renderAdvanceTable();
+      }
+    }
+    
+    // ===============================================
+    // DASHBOARD HISTORY & UTILITY LOGIC 
+    // ===============================================
+
+    /** Toggles the display of all transactions or just the latest 5. */
+    function toggleShowAll() {
+        showAllTransactions = !showAllTransactions;
+        displayTransactionHistory();
+    }
+
+    /** Renders a single transaction row. */
+    function renderTransactionRow(transaction, index) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${formatDateDisplay(transaction.date)}</td>
+            <td style="color: ${transaction.type === 'Income' ? 'green' : 'red'};">${transaction.type}</td>
+            <td>${transaction.subType}</td>
+            <td>${CURRENCY_SYMBOL}${transaction.amount.toFixed(2)}</td>
+            <td>${transaction.note}</td>
+            <td class="actions">
+                <button style="background: #2196F3;" onclick="editTransaction(${index})">✏️</button>
+                <button style="background: #f44336;" onclick="deleteTransaction(${index})">🗑️</button>
+            </td>
+        `;
+        return row;
+    }
+
+    /** Displays all transactions in the history table, limited by HISTORY_LIMIT if showAllTransactions is false. */
+    function displayTransactionHistory() {
+        transactionTable.innerHTML = ''; // Clear previous entries
+        const showMoreContainer = document.getElementById('showMoreContainer');
+        showMoreContainer.innerHTML = ''; // Clear button container
+
+        // Sort transactions by date descending for history view
+        const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        let displayList = sortedTransactions;
+        
+        if (!showAllTransactions && sortedTransactions.length > HISTORY_LIMIT) {
+            // If not showing all, limit to the latest HISTORY_LIMIT
+            displayList = sortedTransactions.slice(0, HISTORY_LIMIT);
+        }
+
+        displayList.forEach(t => {
+            // Find the original index for editing/deleting purposes (important because the list is sorted)
+            const originalIndex = transactions.findIndex(item => item.date === t.date && item.amount === t.amount && item.type === t.type);
+            transactionTable.appendChild(renderTransactionRow(t, originalIndex));
+        });
+
+        if (transactions.length === 0) {
+            transactionTable.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No transactions recorded yet.</td></tr>';
+        } else if (sortedTransactions.length > HISTORY_LIMIT) {
+             // Add show more button if there are hidden transactions
+             const button = document.createElement('button');
+             button.id = 'toggleHistoryButton';
+             button.textContent = showAllTransactions 
+                ? `⬆️ Show Less (Showing ${sortedTransactions.length} of ${sortedTransactions.length})`
+                : `⬇️ Show All History (Latest ${HISTORY_LIMIT} of ${sortedTransactions.length})`;
+             button.onclick = toggleShowAll;
+             showMoreContainer.appendChild(button);
+        }
+    }
+
+    /** Deletes a specific transaction by its original index. */
+    async function deleteTransaction(index) {
+        const confirmed = await showModal("Are you sure you want to delete this transaction?");
+        if (confirmed) {
+            transactions.splice(index, 1);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            updateUI();
+        }
+    }
+    
+    /** Clears all transactions. */
+    async function deleteAll() {
+        const confirmed = await showModal("WARNING: This will delete ALL transaction history and cannot be undone. Are you sure?");
+        if (confirmed) {
+            transactions = [];
+            localStorage.removeItem('transactions');
+            updateUI();
+        }
+    }
+
+    /** Loads a transaction into the form for editing. */
+    function editTransaction(index) {
+        const t = transactions[index];
+        document.getElementById('date').value = t.date; // Date input accepts YYYY-MM-DD
+        typeSelect.value = t.type;
+        updateSubTypes(); // Populate sub-types first
+        subTypeSelect.value = t.subType;
+        document.getElementById('amount').value = t.amount;
+        document.getElementById('note').value = t.note;
+        
+        editIndex = index;
+        submitButton.textContent = '💾 Update Transaction';
+        submitButton.style.background = '#2196F3'; 
+    }
+
+    /** Imports transactions from a CSV file selected by the user. */
+    function importCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const csv = e.target.result;
+            // Split by line, and remove the header (first line)
+            const lines = csv.split('\n').slice(1).filter(line => line.trim() !== '');
+            let importedCount = 0;
+
+            lines.forEach(line => {
+                // Simple CSV parsing for fixed order: Date,Type,Sub-type,Amount,Note
+                const parts = line.split(',').map(part => part.trim()); 
+                
+                if (parts.length >= 4) { // Must have at least Date, Type, Sub-type, Amount
+                    const [rawDate, type, subType, amountStr, note] = parts;
+                    
+                    // Normalize date for internal storage (YYYY-MM-DD)
+                    const date = normalizeDateForStorage(rawDate); 
+                    
+                    // Basic validation
+                    const amount = parseFloat(amountStr);
+                    if (date && (type === 'Income' || type === 'Expense') && subType && !isNaN(amount)) {
+                        transactions.push({ 
+                            date: date, 
+                            type: type, 
+                            subType: subType, 
+                            amount: Math.abs(amount), 
+                            note: note || '' 
+                        });
+                        importedCount++;
+                    }
+                }
+            });
+
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            showMessage(`Import successful! Added ${importedCount} transactions. Total transactions: ${transactions.length}.`);
+            updateUI();
+            // Clear the file input to allow re-importing the same file
+            event.target.value = ''; 
+        };
+        reader.readAsText(file);
+    }
+    
+    /** Exports transaction data as a CSV file. */
+    function exportCSV() {
+        if (transactions.length === 0) {
+            showMessage("No transaction data to export.");
+            return;
+        }
+
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Date,Type,Sub-type,Amount,Note\n"; // Header row
+
+        transactions.forEach(t => {
+            // Export date in display format (DD-MM-YYYY) for user-friendliness
+            const displayDate = formatDateDisplay(t.date); 
+            const row = [displayDate, t.type, t.subType, t.amount.toFixed(2), t.note.replace(/,/g, '')].join(',');
+            csvContent += row + "\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "expense_transactions.csv");
+        document.body.appendChild(link); 
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    /** NEW: Exports ALL data from the application to a single CSV file. */
+    function saveAndExportAllData() {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = String(now.getFullYear()).slice(-2);
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const fileName = `Expense_${day}${month}${year}_${hours}${minutes}.csv`;
+
+        let csvContent = "";
+
+        // Section 1: Transaction History
+        if (transactions.length > 0) {
+            csvContent += "--- TRANSACTION HISTORY ---\n";
+            csvContent += "Date,Type,Sub-type,Amount,Note\n";
+            transactions.forEach(t => {
+                const displayDate = formatDateDisplay(t.date);
+                const row = [displayDate, t.type, t.subType, t.amount.toFixed(2), `"${t.note.replace(/"/g, '""')}"`].join(',');
+                csvContent += row + "\n";
+            });
+        }
+
+        // Section 2: Forecast Breakdown
+        if (manualForecasts.length > 0) {
+            csvContent += "\n\n--- FORECAST BREAKDOWN ---\n";
+            csvContent += "Month,Per Diem,Travel Allowance,Expense\n";
+            manualForecasts.forEach(f => {
+                const row = [f.monthKey, f.perDiem.toFixed(2), f.travelAllowance.toFixed(2), f.expense.toFixed(2)].join(',');
+                csvContent += row + "\n";
+            });
+        }
+
+        // Section 3: Advance Tracking
+        if (advances.length > 0) {
+            csvContent += "\n\n--- ADVANCE TRACKING ---\n";
+            csvContent += "Month,Per Diem,Travel Allowance,Advance Taken\n";
+            advances.forEach(a => {
+                const row = [a.monthKey, a.perDiem.toFixed(2), a.travelAllowance.toFixed(2), a.advanceTaken.toFixed(2)].join(',');
+                csvContent += row + "\n";
+            });
+        }
+        
+        if (csvContent === "") {
+            showMessage("No data available to export.");
+            return;
+        }
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    /** Aggregates transactions by month for the monthly breakdown section. */
+    function getMonthlySummaryData() {
+        const summary = {};
+        transactions.forEach(t => {
+            // t.date is stored as YYYY-MM-DD
+            const [year, month] = t.date.split('-');
+            const key = `${year}-${month}`; // Key for sorting: YYYY-MM
+            
+            if (!summary[key]) {
+                // Create a date object to correctly get the localized month name
+                const dateObj = new Date(year, month - 1); // JS months are 0-indexed
+                const monthName = dateObj.toLocaleString('default', { month: 'long', year: 'numeric' });
+                summary[key] = { monthName: monthName, income: 0, expense: 0 };
+            }
+
+            if (t.type === 'Income') summary[key].income += t.amount;
+            else summary[key].expense += t.amount;
+        });
+        
+        // Convert object to array and sort by YYYY-MM key ASCENDING (oldest first)
+        return Object.entries(summary).sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+    }
+
+    /** Updates the Monthly Breakdown section in the dashboard. */
+    function updateMonthlySummary() {
+        const summaryData = getMonthlySummaryData();
+        const container = document.getElementById('monthlySummary');
+        container.innerHTML = ''; // Clear previous content
+
+        if (summaryData.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #999;">No monthly data to display yet.</p>';
+            return;
+        }
+
+        summaryData.forEach(([key, data]) => {
+            const net = data.income - data.expense;
+            const isSaving = net >= 0;
+
+            const box = document.createElement('div');
+            box.className = 'month-box';
+            box.style.borderLeftColor = isSaving ? '#4CAF50' : '#f44336'; // Green for saving, Red for overbudget
+            
+            box.innerHTML = `
+                <h4 style="margin: 0; font-size: 1.1rem; color: #333;">${data.monthName}</h4>
+                <!-- Right-aligned financial details for better justification -->
+                <div class="month-financial-details" style="min-width: 180px;">
+                    <p style="color: green;">Income: ${CURRENCY_SYMBOL}${data.income.toFixed(2)}</p>
+                    <p style="color: red;">Expense: ${CURRENCY_SYMBOL}${data.expense.toFixed(2)}</p>
+                    <p style="font-weight: 700; color: ${isSaving ? 'blue' : 'darkred'}; border-top: 1px dashed #ccc; padding-top: 5px; margin-top: 5px;">
+                        ${isSaving ? 'Net Saving' : 'Over Budget'}: ${CURRENCY_SYMBOL}${net.toFixed(2)}
+                    </p>
+                </div>
+            `;
+            container.appendChild(box);
+        });
+    }
+
+    
+    // ===============================================
+    // MANUAL FORECAST LOGIC
+    // ===============================================
+
+    /** * Adds the next sequential month to the manualForecasts array. */
+    async function addMonthEntry() {
+        let nextMonthKey;
+
+        if (manualForecasts.length === 0) {
+            const input = await showModal("Enter the starting month for your forecast (MM-YYYY):", 'prompt', "MM-YYYY, e.g., 10-2025");
+            if (!input || !/^\d{2}-\d{4}$/.test(input)) {
+                console.log("Invalid or cancelled input for start month. Format must be MM-YYYY.");
+                return;
+            }
+            const [month, year] = input.split('-');
+            nextMonthKey = `${year}-${month}`;
+
+        } else {
+            const lastEntry = manualForecasts[manualForecasts.length - 1];
+            const [lastYear, lastMonth] = lastEntry.monthKey.split('-').map(Number);
+            let nextYear = lastYear;
+            let nextMonth = lastMonth + 1;
+            if (nextMonth > 12) {
+                nextMonth = 1;
+                nextYear += 1;
+            }
+            nextMonthKey = `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
+        }
+        
+        if (manualForecasts.some(f => f.monthKey === nextMonthKey)) {
+             showMessage(`Month ${nextMonthKey} already exists.`);
+             return;
+        }
+        
+        // Auto-calculate Per Diem and set fixed Travel Allowance
+        const [year, month] = nextMonthKey.split('-').map(Number);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const calculatedPerDiem = daysInMonth * 60;
+        const fixedTravelAllowance = 1150;
+
+        const newEntry = {
+            monthKey: nextMonthKey,
+            perDiem: calculatedPerDiem,
+            travelAllowance: fixedTravelAllowance,
+            expense: 0,
+        };
+
+        manualForecasts.push(newEntry);
+        renderManualForecasts();
+        saveManualForecasts();
+    }
+    
+    /** Saves the manualForecasts array to localStorage. */
+    function saveManualForecasts() {
+        localStorage.setItem('manualForecasts', JSON.stringify(manualForecasts));
+        updateManualForecasts();
+    }
+    
+    /** Deletes a specific month forecast entry. */
+    async function deleteForecastEntry(monthKey) {
+        if(await showModal("Are you sure you want to remove this month's forecast?")) {
+            manualForecasts = manualForecasts.filter(f => f.monthKey !== monthKey);
+            saveManualForecasts();
+            renderManualForecasts();
+        }
+    }
+    
+    /** Clears all forecast entries. */
+    async function deleteAllForecasts() {
+        if(await showModal("WARNING: This will clear ALL projected forecasts. Are you sure?")) {
+            manualForecasts = [];
+            saveManualForecasts();
+            renderManualForecasts();
+        }
+    }
+
+    /** Handles input changes in the forecast table and updates the running balance. */
+    function handleForecastInput(monthKey, field, value) {
+        const amount = parseFloat(value) || 0;
+        const entry = manualForecasts.find(f => f.monthKey === monthKey);
+        if (entry) {
+            entry[field] = amount;
+            saveManualForecasts();
+        }
+    }
+
+    /** Renders the manual forecast table. */
+    function renderManualForecasts() {
+        const tableBody = document.getElementById('forecastTable');
+        tableBody.innerHTML = '';
+        
+        if (manualForecasts.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">Click \'Add Next Month to Forecast\' to begin planning.</td></tr>';
+            return;
+        }
+
+        manualForecasts.sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+        
+        manualForecasts.forEach(entry => {
+            const [year, month] = entry.monthKey.split('-');
+            const date = new Date(year, month - 1, 1); 
+            const monthName = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+            
+            const projectedIncome = entry.perDiem + entry.travelAllowance;
+            const netChange = projectedIncome - entry.expense;
+
+            const row = document.createElement('tr');
+            row.style.color = netChange >= 0 ? 'green' : 'red';
+            
+            const formatInput = (field, value) => `<input type="number" min="0" step="0.01" value="${value.toFixed(2)}" onchange="handleForecastInput('${entry.monthKey}', '${field}', this.value)"/>`;
+
+            row.innerHTML = `
+                <td>${monthName}</td>
+                <td>${formatInput('perDiem', entry.perDiem)}</td>
+                <td>${formatInput('travelAllowance', entry.travelAllowance)}</td>
+                <td>${formatInput('expense', entry.expense)}</td>
+                <td class="net-change" style="font-weight: 600;">${CURRENCY_SYMBOL}${netChange.toFixed(2)}</td>
+                <td class="running-balance" style="font-weight: 600;">${CURRENCY_SYMBOL}0.00</td>
+                <td style="text-align: center;"><button onclick="deleteForecastEntry('${entry.monthKey}')" style="background: #f44336; padding: 0.3rem 0.5rem; width: auto; margin: 0;">&times;</button></td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    /** Calculates and updates forecast summary and running balance. */
+    function updateManualForecasts() {
+        if (document.getElementById('forecastView').style.display === 'none') return;
+        
+        const currentActualBalance = calculateTotals().balance;
+        let runningBalance = currentActualBalance;
+        let totalPerDiem = 0;
+        let totalTravelAllowance = 0;
+        let totalProjectedExpense = 0;
+
+        manualForecasts.sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+
+        const tableRows = document.getElementById('forecastTable').rows; 
+
+        manualForecasts.forEach((entry, index) => {
+            totalPerDiem += entry.perDiem;
+            totalTravelAllowance += entry.travelAllowance;
+            const projectedIncome = entry.perDiem + entry.travelAllowance;
+            const netChange = projectedIncome - entry.expense;
+            runningBalance += netChange;
+            totalProjectedExpense += entry.expense;
+
+            if (tableRows[index]) {
+                const savingCell = tableRows[index].cells[4];
+                savingCell.textContent = `${CURRENCY_SYMBOL}${netChange.toFixed(2)}`;
+                savingCell.style.color = netChange >= 0 ? 'green' : 'red';
+                
+                const runningBalanceCell = tableRows[index].cells[5];
+                runningBalanceCell.textContent = `${CURRENCY_SYMBOL}${runningBalance.toFixed(2)}`;
+                runningBalanceCell.style.color = runningBalance >= 0 ? '#0d47a1' : 'darkred';
+            }
+        });
+        
+        const totalProjectedIncome = totalPerDiem + totalTravelAllowance;
+        const totalForecastedSaving = totalProjectedIncome - totalProjectedExpense;
+        
+        document.getElementById('forecastTotalTravelAllowance').textContent = `${CURRENCY_SYMBOL}${totalTravelAllowance.toFixed(2)}`;
+        document.getElementById('forecastTotalExpense').textContent = `${CURRENCY_SYMBOL}${totalProjectedExpense.toFixed(2)}`;
+        document.getElementById('forecastTotalSaving').textContent = `${CURRENCY_SYMBOL}${totalForecastedSaving.toFixed(2)}`;
+
+        const forecastNetSavingBox = document.getElementById('forecastNetSavingBox');
+        forecastNetSavingBox.className = totalForecastedSaving < 0 ? 'savings-negative' : 'savings-positive';
+        
+        const finalForecastedSavingAmount = currentActualBalance + totalForecastedSaving;
+        document.getElementById('finalForecastedSaving').textContent = `${CURRENCY_SYMBOL}${finalForecastedSavingAmount.toFixed(2)}`;
+    }
+
+    // ===============================================
+    // NEW ADVANCE TRACKING LOGIC
+    // ===============================================
+    
+    /** Adds a new month entry to the advance tracking table. */
+    async function addAdvanceMonthEntry() {
+        let nextMonthKey;
+        if (advances.length === 0) {
+            const input = await showModal("Enter the starting month for advance tracking (MM-YYYY):", 'prompt', "MM-YYYY, e.g., 10-2025");
+            if (!input || !/^\d{2}-\d{4}$/.test(input)) return;
+            const [month, year] = input.split('-');
+            nextMonthKey = `${year}-${month}`;
+        } else {
+            const lastEntry = advances[advances.length - 1];
+            const [lastYear, lastMonth] = lastEntry.monthKey.split('-').map(Number);
+            let nextYear = lastYear, nextMonth = lastMonth + 1;
+            if (nextMonth > 12) { nextMonth = 1; nextYear++; }
+            nextMonthKey = `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
+        }
+
+        if (advances.some(a => a.monthKey === nextMonthKey)) {
+            showMessage(`Month ${nextMonthKey} already exists in advances.`);
+            return;
+        }
+
+        // Auto-calculate default values, similar to the forecast section
+        const [year, month] = nextMonthKey.split('-').map(Number);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const calculatedPerDiem = daysInMonth * 60;
+        const fixedTravelAllowance = 1150;
+
+        advances.push({ 
+            monthKey: nextMonthKey, 
+            perDiem: calculatedPerDiem,
+            travelAllowance: fixedTravelAllowance,
+            advanceTaken: 0 
+        });
+        saveAdvances();
+    }
+
+    /** Saves the advances array to localStorage and re-renders the table. */
+    function saveAdvances() {
+        localStorage.setItem('advances', JSON.stringify(advances));
+        renderAdvanceTable();
+        updateAdvanceSummary(); // Update summary whenever data changes
+    }
+    
+    /** Handles user input for all fields in the advance table. */
+    function handleAdvanceInputChange(monthKey, field, value) {
+        const entry = advances.find(a => a.monthKey === monthKey);
+        if (entry) {
+            entry[field] = parseFloat(value) || 0;
+            saveAdvances();
+        }
+    }
+
+    /** Renders the advance tracking table. */
+    function renderAdvanceTable() {
+        if (document.getElementById('forecastView').style.display === 'none') return;
+        const tableBody = document.getElementById('advanceTable');
+        tableBody.innerHTML = '';
+
+        if (advances.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">Click \'Add Month to Advance\' to begin tracking.</td></tr>';
+            return;
+        }
+
+        advances.sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+        
+        advances.forEach(entry => {
+            const [year, month] = entry.monthKey.split('-');
+            const date = new Date(year, month - 1, 1);
+            const monthName = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            const projectedIncome = entry.perDiem + entry.travelAllowance;
+            const remainingBalance = projectedIncome - entry.advanceTaken;
+            
+            const row = document.createElement('tr');
+            
+            const formatInput = (field, value) => `<input type="number" min="0" step="0.01" value="${value.toFixed(2)}" onchange="handleAdvanceInputChange('${entry.monthKey}', '${field}', this.value)"/>`;
+
+            row.innerHTML = `
+                <td>${monthName}</td>
+                <td>${formatInput('perDiem', entry.perDiem)}</td>
+                <td>${formatInput('travelAllowance', entry.travelAllowance)}</td>
+                <td>${formatInput('advanceTaken', entry.advanceTaken)}</td>
+                <td style="font-weight: 600; color: ${remainingBalance >= 0 ? 'green' : 'red'};">${CURRENCY_SYMBOL}${remainingBalance.toFixed(2)}</td>
+                <td style="text-align: center;"><button onclick="deleteAdvanceEntry('${entry.monthKey}')" style="background: #f44336; padding: 0.3rem 0.5rem; width: auto; margin: 0;">&times;</button></td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+    
+    /** NEW: Calculates and updates the advance summary cards. */
+    function updateAdvanceSummary() {
+        let totalIncome = 0;
+        let totalAdvanceTaken = 0;
+
+        advances.forEach(entry => {
+            totalIncome += entry.perDiem + entry.travelAllowance;
+            totalAdvanceTaken += entry.advanceTaken;
+        });
+
+        const balance = totalIncome - totalAdvanceTaken;
+
+        document.getElementById('advanceTotalIncome').textContent = `${CURRENCY_SYMBOL}${totalIncome.toFixed(2)}`;
+        document.getElementById('advanceTotalTaken').textContent = `${CURRENCY_SYMBOL}${totalAdvanceTaken.toFixed(2)}`;
+        document.getElementById('advanceBalance').textContent = `${CURRENCY_SYMBOL}${balance.toFixed(2)}`;
+        
+        const balanceBox = document.getElementById('advanceBalanceBox');
+        if (balance < 0) {
+            balanceBox.classList.remove('savings-positive');
+            balanceBox.classList.add('savings-negative');
+        } else {
+            balanceBox.classList.remove('savings-negative');
+            balanceBox.classList.add('savings-positive');
+        }
+    }
+    
+    /** Deletes a specific month from the advance table. */
+    async function deleteAdvanceEntry(monthKey) {
+        if(await showModal("Are you sure you want to remove this month's advance entry?")) {
+            advances = advances.filter(a => a.monthKey !== monthKey);
+            saveAdvances();
+        }
+    }
+    
+    /** Clears all advance entries. */
+    async function deleteAllAdvances() {
+        if(await showModal("WARNING: This will clear ALL advance tracking data. Are you sure?")) {
+            advances = [];
+            saveAdvances();
+        }
+    }
+
+    // 5. Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+        updateSubTypes(); 
+        document.getElementById('date').value = getTodayDateForInput();
+        updateUI(); 
+        switchView('dashboard'); // Start on dashboard
+        document.getElementById('saveButton').addEventListener('click', saveAndExportAllData);
+    });
+
+
+    // --- Modal Logic ---
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalInputContainer = document.getElementById('modalInputContainer');
+    const modalTextInput = document.getElementById('modalTextInput');
+    const modalConfirmButton = document.getElementById('modalConfirmButton');
+    const modalCancelButton = document.getElementById('modalCancelButton');
+
+    function showModal(message, type = 'confirm', placeholder = '') {
+        return new Promise((resolve) => {
+            modalMessage.textContent = message;
+            
+            if (type === 'prompt') {
+                modalInputContainer.style.display = 'block';
+                modalTextInput.value = '';
+                modalTextInput.placeholder = placeholder;
+            } else {
+                modalInputContainer.style.display = 'none';
+            }
+
+            modalBackdrop.style.display = 'flex';
+
+            const confirmCallback = () => {
+                hideModal();
+                resolve(type === 'prompt' ? modalTextInput.value : true);
+            };
+            
+            const cancelCallback = () => {
+                hideModal();
+                resolve(type === 'prompt' ? null : false);
+            };
+
+            modalConfirmButton.onclick = confirmCallback;
+            modalCancelButton.onclick = cancelCallback;
+        });
+    }
+
+    function showMessage(message) {
+        modalMessage.textContent = message;
+        modalInputContainer.style.display = 'none';
+        modalConfirmButton.textContent = 'OK';
+        modalCancelButton.style.display = 'none';
+        modalBackdrop.style.display = 'flex';
+
+        modalConfirmButton.onclick = () => {
+            hideModal();
+            // Reset button states for next time
+            modalConfirmButton.textContent = 'Confirm';
+            modalCancelButton.style.display = 'inline-block';
+        };
+    }
+
+    function hideModal() {
+        modalBackdrop.style.display = 'none';
+    }
+
+    // Global event listener to close modal with Escape key
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modalBackdrop.style.display === 'flex') {
+            hideModal();
+            // We resolve with a "cancel" value if escape is pressed
+            if (modalCancelButton.onclick) modalCancelButton.onclick();
+        }
+    });
+  </script>
+</body>
+</html>
+
